@@ -1,4 +1,5 @@
 """Sample code to build and run LightGlue TensorRT engine inference."""
+
 import numpy as np
 import tensorrt as trt  # >= 8.6.1
 import torch
@@ -30,6 +31,7 @@ def build_engine(
         raise Exception
 
     config = builder.create_builder_config()
+    config.set_flag(trt.BuilderFlag.FP16)
 
     profile = builder.create_optimization_profile()
 
@@ -113,10 +115,10 @@ def run_engine(engine_path: str):
 
 
 if __name__ == "__main__":
-    model_path = "weights/superpoint_lightglue.trt.onnx"
+    model_path = "weights/superpoint_lightglue_end2end.onnx"
     output_path = "weights/superpoint_lightglue.engine"
 
     build_engine(model_path, output_path)
-    matches0, mscores0 = run_engine(output_path)
+    # matches0, mscores0 = run_engine(output_path)
 
-    print(matches0.reshape(512, 2))
+    # print(matches0.reshape(512, 2))
