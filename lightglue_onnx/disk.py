@@ -5,6 +5,29 @@ import kornia
 import torch
 import torch.nn.functional as F
 
+# def nms(
+#     signal: torch.Tensor, window_size: int = 5, cutoff: float = 0.0
+# ) -> torch.Tensor:
+#     if window_size % 2 != 1:
+#         raise ValueError(f"window_size has to be odd, got {window_size}")
+
+#     _, ixs = F.max_pool2d(
+#         signal,
+#         kernel_size=window_size,
+#         stride=1,
+#         padding=window_size // 2,
+#         return_indices=True,
+#     )
+
+#     _, _, h, w = signal.shape
+#     coords = torch.arange(h * w, device=signal.device).reshape(h, w)
+#     nms = ixs == coords
+
+#     if cutoff is None:
+#         return nms
+#     else:
+#         return nms & (signal > cutoff)
+
 
 def nms(
     signal: torch.Tensor, window_size: int = 5, cutoff: float = 0.0
@@ -12,22 +35,14 @@ def nms(
     if window_size % 2 != 1:
         raise ValueError(f"window_size has to be odd, got {window_size}")
 
-    _, ixs = F.max_pool2d(
-        signal,
-        kernel_size=window_size,
-        stride=1,
-        padding=window_size // 2,
-        return_indices=True,
-    )
+    max_mask = (
+        signal
+        == F.max_pool2d(
+            signal, kernel_size=window_size, stride=1, padding=window_size // 2
+        )
+    ) & (signal > cutoff)
 
-    _, _, h, w = signal.shape
-    coords = torch.arange(h * w, device=signal.device).reshape(h, w)
-    nms = ixs == coords
-
-    if cutoff is None:
-        return nms
-    else:
-        return nms & (signal > cutoff)
+    return max_mask
 
 
 def heatmap_to_keypoints(
